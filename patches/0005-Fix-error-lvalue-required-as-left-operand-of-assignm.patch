@@ -1,0 +1,26 @@
+From 53c62003ec1907fdd7e24584f7728f2d03e3e20e Mon Sep 17 00:00:00 2001
+From: Costin Lupu <costin.lupu@cs.pub.ro>
+Date: Sat, 16 Oct 2021 20:39:37 +0300
+Subject: [PATCH] Fix error: lvalue required as left operand of assignment
+
+Signed-off-by: Costin Lupu <costin.lupu@cs.pub.ro>
+---
+ deps/hiredis/hiredis.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/deps/hiredis/hiredis.h b/deps/hiredis/hiredis.h
+index 423d5e5..77d5797 100644
+--- a/deps/hiredis/hiredis.h
++++ b/deps/hiredis/hiredis.h
+@@ -99,7 +99,7 @@
+          * need to copy the result into our private buffer. */                 \
+         if (err_str != (buf)) {                                                \
+             strncpy((buf), err_str, ((len) - 1));                              \
+-            buf[(len)-1] = '\0';                                               \
++            (buf)[(len)-1] = '\0';                                               \
+         }                                                                      \
+     } while (0)
+ #endif
+-- 
+2.20.1
+
