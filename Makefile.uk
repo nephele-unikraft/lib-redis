@@ -41,6 +41,7 @@
 $(eval $(call addlib_s,libredis,$(CONFIG_LIBREDIS)))
 $(eval $(call addlib_s,libredis_lua,$(CONFIG_LIBREDIS_LUA)))
 $(eval $(call addlib_s,libredis_hiredis,$(CONFIG_LIBREDIS_HIREDIS)))
+$(eval $(call addlib_s,libredis_jemalloc,$(CONFIG_LIBREDIS_JEMALLOC)))
 $(eval $(call addlib_s,libredis_common,$(CONFIG_LIBREDIS_COMMON)))
 $(eval $(call addlib_s,libredis_server,$(CONFIG_LIBREDIS_SERVER)))
 $(eval $(call addlib_s,libredis_client,$(CONFIG_LIBREDIS_CLIENT)))
@@ -136,11 +137,51 @@ LIBREDIS_HIREDIS_SRCS-y += $(LIBREDIS_DEPS)/hiredis/read.c
 LIBREDIS_HIREDIS_SRCS-y += $(LIBREDIS_SRC)/sds.c
 
 ################################################################################
+# Redis internal Jemalloc
+################################################################################
+LIBREDIS_JEMALLOC_CFLAGS-y += $(LIBREDIS_CFLAGS-y)
+LIBREDIS_JEMALLOC_CFLAGS-y += -D_GNU_SOURCE -D_REENTRANT -DJEMALLOC_NO_RENAME
+LIBREDIS_JEMALLOC_CINCLUDES-y += -I$(LIBREDIS_DEPS)/jemalloc/include
+
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/jemalloc.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/arena.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/background_thread.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/base.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/bin.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/bitmap.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/ckh.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/ctl.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/div.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/extent.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/extent_dss.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/extent_mmap.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/hash.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/hooks.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/large.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/log.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/malloc_io.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/mutex.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/mutex_pool.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/nstime.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/pages.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/prng.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/prof.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/rtree.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/stats.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/sz.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/tcache.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/ticker.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/tsd.c
+LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/witness.c
+#LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/jemalloc_cpp.cpp
+
+################################################################################
 # Functionality shared between server and client
 ################################################################################
 LIBREDIS_COMMON_CFLAGS-y    += $(LIBREDIS_CFLAGS-y)
 LIBREDIS_COMMON_CFLAGS-y    += -Wno-missing-field-initializers
 LIBREDIS_COMMON_CFLAGS-y    += -DREDIS_STATIC=''
+LIBREDIS_COMMON_CFLAGS-y    += -DUSE_JEMALLOC -I$(LIBREDIS_DEPS)/jemalloc/include
 LIBREDIS_COMMON_CINCLUDES-y += $(LIBREDIS_CINCLUDES-y)
 
 LIBREDIS_COMMON_SRCS-y += $(LIBREDIS_SRC)/adlist.c
@@ -160,6 +201,7 @@ LIBREDIS_COMMON_SRCS-$(CONFIG_LIBREDIS_MAIN_FUNCTION) += $(LIBREDIS_BASE)/main.c
 # Redis server
 ################################################################################
 LIBREDIS_SERVER_CFLAGS-y    += $(LIBREDIS_COMMON_CFLAGS-y)
+LIBREDIS_SERVER_CFLAGS-y    += -DUSE_JEMALLOC -I$(LIBREDIS_DEPS)/jemalloc/include
 LIBREDIS_SERVER_CINCLUDES-y += $(LIBREDIS_COMMON_CINCLUDES-y)
 
 LIBREDIS_SERVER_SRCS-y += $(LIBREDIS_SRC)/aof.c
