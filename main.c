@@ -97,6 +97,10 @@ int main(int argc, char *argv[])
 	rc = pthread_create(&thread_server, NULL, server_thread_fn, &aw);
 	if (rc)
 		goto out;
+
+	rc = pthread_setname_np(thread_server, "redis-server");
+	if (rc)
+		goto out;
 #endif
 
 	/* Start client and wait for it to end */
