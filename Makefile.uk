@@ -175,6 +175,15 @@ LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/tsd.c
 LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/witness.c
 #LIBREDIS_JEMALLOC_SRCS-y += $(LIBREDIS_DEPS)/jemalloc/src/jemalloc_cpp.cpp
 
+ifeq ($(CONFIG_LIBREDIS_JEMALLOC),y)
+UK_PREPARE += $(LIBREDIS_BUILD)/.configured-jemalloc
+
+$(LIBREDIS_BUILD)/.configured-jemalloc: $(LIBREDIS_BUILD)/.patched
+	cd $(LIBREDIS_DEPS)/jemalloc && ./configure --with-version=5.1.0-0-g0 --with-lg-quantum=3 --with-jemalloc-prefix=je_ --enable-cc-silence CFLAGS="-std=gnu99 -Wall -pipe -g3 -O3 -funroll-loops" LDFLAGS= && make -j$(nproc)
+	cp $(LIBREDIS_BASE)/custom/jemalloc_internal_defs.h $(LIBREDIS_DEPS)/jemalloc/include/jemalloc/internal/jemalloc_internal_defs.h
+	touch "$@"
+endif
+
 ################################################################################
 # Functionality shared between server and client
 ################################################################################
